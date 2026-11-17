@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moment & Torque Lab: Seesaw Edition</title>
+    <style>
+        /* Reset & Base Typography - Zero External Dependencies */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-app: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-header: #0f172a;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --sky-primary: #0284c7;
+            --sky-light: #e0f2fe;
+            --sky-border: #bae6fd;
+            --amber-primary: #d97706;
+            --amber-light: #fef3c7;
+            --amber-border: #fde68a;
+            --green-primary: #059669;
+            --green-light: #d1fae5;
+            --green-border: #a7f3d0;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-app);
+            color: var(--text-main);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 14px 20px;
+            border-bottom: 1px solid #334155;
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-inner {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        .brand h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .brand p {
+            font-size: 0.78rem;
+            color: #cbd5e1;
+        }
+
+        .formula-highlight {
+            color: #fcd34d;
+            font-weight: 700;
+        }
+
+        /* Mode Switcher */
+        .mode-tabs {
+            display: inline-flex;
+            background: #1e293b;
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .mode-btn {
+            border: none;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .mode-btn:hover {
+            color: #ffffff;
+        }
+
+        .mode-btn.active {
+            background: #0284c7;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 16px 20px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Challenge Banner */
+        .challenge-panel {
+            display: none;
+            background: #ffffff;
+            border: 2px solid #818cf8;
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .challenge-panel.visible {
+            display: block;
+        }
+
+        .challenge-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .challenge-badges {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .badge-level {
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 999px;
+            text-transform: uppercase;
+        }
+
+        .badge-score {
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+        }
+
+        .challenge-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .challenge-desc {
+            font-size: 0.9rem;
+            color: #334155;
+            margin-top: 2px;
+        }
+
+        .challenge-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #4f46e5;
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .challenge-feedback {
+            display: none;
+            margin-top: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+
+        .challenge-feedback.success {
+            display: block;
+            background: var(--green-light);
+            color: #065f46;
+            border: 1px solid var(--green-border);
+        }
+
+        .challenge-feedback.error {
+            display: block;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Status & Equations Bar */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 900px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metric-card.girl-card {
+            border-left: 5px solid var(--sky-primary);
+        }
+
+        .metric-card.boy-card {
+            border-right: 5px solid var(--amber-primary);
+        }
+
+        .metric-label {
+            font-size: 0.76rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 4px;
+        }
+
+        .girl-text { color: var(--sky-primary); }
+        .boy-text { color: var(--amber-primary); }
+
+        .metric-equation {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .metric-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Equilibrium Banner Card */
+        .status-card {
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            text-align: center;
+            border: 2px solid var(--green-border);
+            background: var(--green-light);
+            color: #065f46;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .status-card.unbalanced-left {
+            background: var(--sky-light);
+            border-color: var(--sky-border);
+            color: #075985;
+        }
+
+        .status-card.unbalanced-right {
+            background: var(--amber-light);
+            border-color: var(--amber-border);
+            color: #92400e;
+        }
+
+        .status-title {
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .status-detail {
+            font-size: 0.84rem;
+            font-weight: 600;
+            margin-top: 3px;
+        }
+
+        /* Canvas Simulation Stage */
+        .stage-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .stage-toolbar {
+            padding: 10px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .drag-hint {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .hint-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #10b981;
+            display: inline-block;
+        }
+
+        .stage-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            width: 16px;
+            height: 16px;
+            accent-color: #0284c7;
+            cursor: pointer;
+        }
+
+        .preset-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 6px 11px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .preset-btn:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            height: 410px;
+            background: linear-gradient(180deg, #e0f2fe 0%, #f0f9ff 68%, #dcfce7 68%, #bbf7d0 100%);
+            touch-action: none;
+            user-select: none;
+        }
+
+        @media (max-width: 640px) {
+            .canvas-wrapper {
+                height: 340px;
+            }
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        canvas.dragging {
+            cursor: grabbing;
+        }
+
+        /* Controls Deck (Girl vs Healthy Boy) */
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 860px) {
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-panel {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .panel-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .lock-badge {
+            display: none;
+            font-size: 0.74rem;
+            font-weight: 800;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
+
+        .lock-badge.visible {
+            display: inline-block;
+        }
+
+        /* Control Group */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .value-badges {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mass-tag {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .val-pill {
+            font-size: 0.86rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 8px;
+        }
+
+        .val-pill.sky {
+            background: var(--sky-light);
+            color: #0369a1;
+            border: 1px solid var(--sky-border);
+        }
+
+        .val-pill.amber {
+            background: var(--amber-light);
+            color: #b45309;
+            border: 1px solid var(--amber-border);
+        }
+
+        /* Weight Preset Pills */
+        .weight-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .w-pill {
+            padding: 7px 4px;
+            border-radius: 9px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+            line-height: 1.25;
+        }
+
+        .w-pill span {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 600;
+            opacity: 0.85;
+        }
+
+        .w-pill.sky {
+            background: #f0f9ff;
+            border: 1px solid var(--sky-border);
+            color: #0369a1;
+        }
+
+        .w-pill.sky:hover:not(:disabled) {
+            background: #e0f2fe;
+        }
+
+        .w-pill.sky.active {
+            background: var(--sky-primary);
+            border-color: var(--sky-primary);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+        }
+
+        .w-pill.amber {
+            background: #fffbeb;
+            border: 1px solid var(--amber-border);
+            color: #b45309;
+        }
+
+        .w-pill.amber:hover:not(:disabled) {
+            background: #fef3c7;
+        }
+
+        .w-pill.amber.active {
+            background: var(--amber-primary);
+            border-color: var(--amber-primary);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35);
+        }
+
+        .w-pill:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Slider Row */
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #1e293b;
+            font-size: 1.15rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background 0.15s ease;
+        }
+
+        .step-btn:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+
+        .step-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            outline: none;
+            cursor: pointer;
+        }
+
+        input[type="range"].sky-range {
+            accent-color: var(--sky-primary);
+        }
+
+        input[type="range"].amber-range {
+            accent-color: var(--amber-primary);
+        }
+
+        input[type="range"]:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .range-ticks {
+            display: flex;
+            justify-content: space-between;
+            padding: 0 48px;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-icon" aria-hidden="true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="10" x2="21" y2="14"></line>
+                        <polygon points="12 12 8 20 16 20" fill="#ffffff"></polygon>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Moment &amp; Torque Lab: Seesaw Edition</h1>
+                    <p>Turning Effect of Force: <span class="mono formula-highlight">Moment (N·m) = Weight (N) × Distance (m)</span> <span style="opacity:0.75;">(g = 10 N/kg)</span></p>
+                </div>
+            </div>
+
+            <div class="mode-tabs" role="tablist">
+                <button type="button" id="tab-sandbox" class="mode-btn active">Sandbox Lab</button>
+                <button type="button" id="tab-challenge" class="mode-btn">Challenge Mode (5 Levels)</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Challenge Mode Panel -->
+        <section id="challenge-panel" class="challenge-panel" aria-live="polite">
+            <div class="challenge-top">
+                <div>
+                    <div class="challenge-badges">
+                        <span id="challenge-level-badge" class="badge-level">Challenge 1 of 5</span>
+                        <span id="challenge-score-badge" class="badge-score mono">Score: 0 / 5</span>
+                    </div>
+                    <h2 id="challenge-title" class="challenge-title">Level 1: Balance the Seesaw</h2>
+                    <p id="challenge-desc" class="challenge-desc">Walk the Healthy Boy along the right side until the seesaw balances!</p>
+                </div>
+                <div class="challenge-actions">
+                    <button type="button" id="btn-check-answer" class="btn-primary">Check Answer</button>
+                    <button type="button" id="btn-next-challenge" class="btn-secondary">Next Level →</button>
+                </div>
+            </div>
+            <div id="challenge-feedback" class="challenge-feedback"></div>
+        </section>
+
+        <!-- Live Moments & Equilibrium Status Bar -->
+        <section class="metrics-grid" aria-label="Moment Calculations">
+            <div class="metric-card girl-card">
+                <div class="metric-label girl-text">Counter-Clockwise Moment (Girl)</div>
+                <div id="eq-left" class="metric-equation mono">300 N × 1.5 m = 450.0 N·m</div>
+                <div class="metric-sub">Turns seesaw anti-clockwise (left side down)</div>
+            </div>
+
+            <div id="status-card" class="status-card">
+                <div id="status-title" class="status-title">BALANCED (Equilibrium)</div>
+                <div id="status-detail" class="status-detail mono">Net Moment = 0.0 N·m (CCW = CW)</div>
+            </div>
+
+            <div class="metric-card boy-card">
+                <div class="metric-label boy-text">Clockwise Moment (Healthy Boy)</div>
+                <div id="eq-right" class="metric-equation mono">450 N × 1.0 m = 450.0 N·m</div>
+                <div class="metric-sub">Turns seesaw clockwise (right side down)</div>
+            </div>
+        </section>
+
+        <!-- Interactive Simulation Canvas Stage -->
+        <section class="stage-card">
+            <div class="stage-toolbar">
+                <div class="drag-hint">
+                    <span class="hint-dot"></span>
+                    <span>Tip: Click &amp; drag the <strong>Girl</strong> or <strong>Healthy Boy</strong> along the scale to make them walk!</span>
+                </div>
+                <div class="stage-controls">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggle-vectors" checked>
+                        <span>Show Vectors &amp; Brackets</span>
+                    </label>
+                    <button type="button" id="preset-balance" class="preset-btn">Reset to Balance</button>
+                    <button type="button" id="preset-equal" class="preset-btn">Equal Weights</button>
+                    <button type="button" id="preset-double" class="preset-btn">2× Weight, ½ Distance</button>
+                </div>
+            </div>
+
+            <div id="canvas-wrapper" class="canvas-wrapper">
+                <canvas id="sim-canvas" width="900" height="410"></canvas>
+            </div>
+        </section>
+
+        <!-- Controls Deck for Girl and Healthy Boy -->
+        <section class="controls-grid">
+            <!-- Left Character: Girl -->
+            <div class="control-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="avatar-dot" style="background:#0284c7;"></span>
+                        <h3 class="panel-title">Girl (Left Side)</h3>
+                    </div>
+                    <span id="lock-left" class="lock-badge">Locked in Challenge</span>
+                </div>
+
+                <!-- Girl Weight & Mass -->
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="slider-left-f" class="control-label">Girl's Weight (W₁ = mg)</label>
+                        <div class="value-badges">
+                            <span id="mass-left-text" class="mass-tag mono">(30 kg)</span>
+                            <span id="val-left-f" class="val-pill sky mono">300 N</span>
+                        </div>
+                    </div>
+
+                    <div class="weight-presets" id="presets-left-f">
+                        <button type="button" class="w-pill sky mono" data-target="leftF" data-val="200">200 N<span>20 kg</span></button>
+                        <button type="button" class="w-pill sky mono active" data-target="leftF" data-val="300">300 N<span>30 kg</span></button>
+                        <button type="button" class="w-pill sky mono" data-target="leftF" data-val="400">400 N<span>40 kg</span></button>
+                        <button type="button" class="w-pill sky mono" data-target="leftF" data-val="500">500 N<span>50 kg</span></button>
+                    </div>
+
+                    <div class="slider-row">
+                        <button type="button" id="btn-left-f-minus" class="step-btn" aria-label="Decrease Girl Weight">−</button>
+                        <input type="range" id="slider-left-f" class="sky-range" min="150" max="700" step="10" value="300">
+                        <button type="button" id="btn-left-f-plus" class="step-btn" aria-label="Increase Girl Weight">+</button>
+                    </div>
+                    <div class="range-ticks mono">
+                        <span>150 N (15 kg)</span>
+                        <span>420 N</span>
+                        <span>700 N (70 kg)</span>
+                    </div>
+                </div>
+
+                <!-- Girl Distance -->
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="slider-left-d" class="control-label">Walk Distance from Pivot (d₁)</label>
+                        <span id="val-left-d" class="val-pill sky mono">1.5 m</span>
+                    </div>
+                    <div class="slider-row">
+                        <button type="button" id="btn-left-d-minus" class="step-btn" aria-label="Walk Girl Closer">−</button>
+                        <input type="range" id="slider-left-d" class="sky-range" min="0.5" max="2.5" step="0.1" value="1.5">
+                        <button type="button" id="btn-left-d-plus" class="step-btn" aria-label="Walk Girl Further">+</button>
+                    </div>
+                    <div class="range-ticks mono">
+                        <span>0.5 m</span>
+                        <span>1.5 m</span>
+                        <span>2.5 m</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Character: Healthy Boy -->
+            <div class="control-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <span class="avatar-dot" style="background:#d97706;"></span>
+                        <h3 class="panel-title">Healthy Boy (Right Side)</h3>
+                    </div>
+                    <span id="lock-right" class="lock-badge">Locked in Challenge</span>
+                </div>
+
+                <!-- Boy Weight & Mass -->
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="slider-right-f" class="control-label">Healthy Boy's Weight (W₂ = mg)</label>
+                        <div class="value-badges">
+                            <span id="mass-right-text" class="mass-tag mono">(45 kg)</span>
+                            <span id="val-right-f" class="val-pill amber mono">450 N</span>
+                        </div>
+                    </div>
+
+                    <div class="weight-presets" id="presets-right-f">
+                        <button type="button" class="w-pill amber mono" data-target="rightF" data-val="300">300 N<span>30 kg</span></button>
+                        <button type="button" class="w-pill amber mono active" data-target="rightF" data-val="450">450 N<span>45 kg</span></button>
+                        <button type="button" class="w-pill amber mono" data-target="rightF" data-val="550">550 N<span>55 kg</span></button>
+                        <button type="button" class="w-pill amber mono" data-target="rightF" data-val="650">650 N<span>65 kg</span></button>
+                    </div>
+
+                    <div class="slider-row">
+                        <button type="button" id="btn-right-f-minus" class="step-btn" aria-label="Decrease Boy Weight">−</button>
+                        <input type="range" id="slider-right-f" class="amber-range" min="150" max="700" step="10" value="450">
+                        <button type="button" id="btn-right-f-plus" class="step-btn" aria-label="Increase Boy Weight">+</button>
+                    </div>
+                    <div class="range-ticks mono">
+                        <span>150 N (15 kg)</span>
+                        <span>420 N</span>
+                        <span>700 N (70 kg)</span>
+                    </div>
+                </div>
+
+                <!-- Boy Distance -->
+                <div class="control-group">
+                    <div class="control-label-row">
+                        <label for="slider-right-d" class="control-label">Walk Distance from Pivot (d₂)</label>
+                        <span id="val-right-d" class="val-pill amber mono">1.0 m</span>
+                    </div>
+                    <div class="slider-row">
+                        <button type="button" id="btn-right-d-minus" class="step-btn" aria-label="Walk Boy Closer">−</button>
+                        <input type="range" id="slider-right-d" class="amber-range" min="0.5" max="2.5" step="0.1" value="1.0">
+                        <button type="button" id="btn-right-d-plus" class="step-btn" aria-label="Walk Boy Further">+</button>
+                    </div>
+                    <div class="range-ticks mono">
+                        <span>0.5 m</span>
+                        <span>1.5 m</span>
+                        <span>2.5 m</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // =========================================================================
+            // 1. APPLICATION STATE
+            // =========================================================================
+            const state = {
+                mode: 'sandbox',        // 'sandbox' | 'challenge'
+                leftF: 300,             // Girl weight in N (150 - 700)
+                leftD: 1.5,             // Girl distance in m (0.5 - 2.5)
+                rightF: 450,            // Healthy Boy weight in N (150 - 700)
+                rightD: 1.0,            // Healthy Boy distance in m (0.5 - 2.5)
+
+                // Smoothed visual animation states
+                visualLeftF: 300,
+                visualRightF: 450,
+                visualLeftD: 1.5,
+                visualRightD: 1.0,
+                leftWalkPhase: 0,
+                rightWalkPhase: 0,
+                currentAngle: 0,
+
+                // Interaction state
+                showVectors: true,
+                dragging: null,         // 'girl' | 'boy' | null
+                hovered: null,          // 'girl' | 'boy' | null
+
+                // Challenge Mode state
+                challengeIdx: 0,
+                solvedSet: new Set(),
+
+                // Particles for equilibrium celebration
+                confetti: [],
+                wasBalanced: true
+            };
+
+            // =========================================================================
+            // 2. CHALLENGE LEVELS DATA (O-Level / IGCSE Physics)
+            // =========================================================================
+            const challenges = [
+                {
+                    title: "Level 1: Heavier Boy, Shorter Distance",
+                    desc: "The Girl (300 N) stands at 2.0 m on the left (CCW Moment = 600 N·m). Walk the Healthy Boy (600 N) along the right side until the seesaw balances!",
+                    setup: { leftF: 300, leftD: 2.0, rightF: 600, rightD: 2.2 },
+                    locks: { leftF: true, leftD: true, rightF: true, rightD: false },
+                    explain: "Correct! 300 N × 2.0 m = 600 N·m. Because the Healthy Boy weighs twice as much (600 N), he only needs half the distance (1.0 m) to create 600 N·m!"
+                },
+                {
+                    title: "Level 2: Walk the Girl Outward",
+                    desc: "The Healthy Boy (450 N) stands at 1.6 m on the right (CW Moment = 720 N·m). Walk the Girl (360 N) outward until she balances him!",
+                    setup: { leftF: 360, leftD: 0.8, rightF: 450, rightD: 1.6 },
+                    locks: { leftF: true, leftD: false, rightF: true, rightD: true },
+                    explain: "Spot on! Right CW Moment = 450 N × 1.6 m = 720 N·m. For the 360 N Girl, d₁ = 720 ÷ 360 = 2.0 m."
+                },
+                {
+                    title: "Level 3: Choose the Healthy Boy's Weight",
+                    desc: "The Girl (300 N) is at 2.2 m (CCW = 660 N·m). The Healthy Boy is standing at 1.2 m. Adjust the Boy's weight so the seesaw balances!",
+                    setup: { leftF: 300, leftD: 2.2, rightF: 450, rightD: 1.2 },
+                    locks: { leftF: true, leftD: true, rightF: false, rightD: true },
+                    explain: "Well done! 660 N·m ÷ 1.2 m = 550 N (55 kg). A larger weight is needed when standing closer to the pivot."
+                },
+                {
+                    title: "Level 4: Equal Distances, Equal Weights",
+                    desc: "The Healthy Boy (450 N) stands at 1.8 m. Adjust the Girl's weight while she stands at 1.8 m to achieve equilibrium.",
+                    setup: { leftF: 250, leftD: 1.8, rightF: 450, rightD: 1.8 },
+                    locks: { leftF: false, leftD: true, rightF: true, rightD: true },
+                    explain: "Exactly! When both stand at equal distances from the pivot (1.8 m), their weights must also be equal (450 N) for zero net moment."
+                },
+                {
+                    title: "Level 5: Master Balance Challenge",
+                    desc: "The Healthy Boy (500 N) stands at 2.1 m (CW Moment = 1050 N·m). Adjust the Girl's weight (500 N) AND walk her to 2.1 m—or try 420 N at 2.5 m!",
+                    setup: { leftF: 300, leftD: 1.0, rightF: 500, rightD: 2.1 },
+                    locks: { leftF: false, leftD: false, rightF: true, rightD: true },
+                    explain: "Brilliant! Right CW Moment = 500 N × 2.1 m = 1050 N·m. Any combination where W₁ × d₁ = 1050 N·m (such as 420 N at 2.5 m or 500 N at 2.1 m) achieves equilibrium!"
+                }
+            ];
+
+            // =========================================================================
+            // 3. DOM ELEMENT REFERENCES
+            // =========================================================================
+            const dom = {
+                canvas: document.getElementById('sim-canvas'),
+                canvasWrapper: document.getElementById('canvas-wrapper'),
+                tabSandbox: document.getElementById('tab-sandbox'),
+                tabChallenge: document.getElementById('tab-challenge'),
+                challengePanel: document.getElementById('challenge-panel'),
+                challengeLevelBadge: document.getElementById('challenge-level-badge'),
+                challengeScoreBadge: document.getElementById('challenge-score-badge'),
+                challengeTitle: document.getElementById('challenge-title'),
+                challengeDesc: document.getElementById('challenge-desc'),
+                challengeFeedback: document.getElementById('challenge-feedback'),
+                btnCheckAnswer: document.getElementById('btn-check-answer'),
+                btnNextChallenge: document.getElementById('btn-next-challenge'),
+
+                eqLeft: document.getElementById('eq-left'),
+                eqRight: document.getElementById('eq-right'),
+                statusCard: document.getElementById('status-card'),
+                statusTitle: document.getElementById('status-title'),
+                statusDetail: document.getElementById('status-detail'),
+
+                toggleVectors: document.getElementById('toggle-vectors'),
+                presetBalance: document.getElementById('preset-balance'),
+                presetEqual: document.getElementById('preset-equal'),
+                presetDouble: document.getElementById('preset-double'),
+
+                lockLeft: document.getElementById('lock-left'),
+                lockRight: document.getElementById('lock-right'),
+
+                valLeftF: document.getElementById('val-left-f'),
+                massLeftText: document.getElementById('mass-left-text'),
+                valLeftD: document.getElementById('val-left-d'),
+                valRightF: document.getElementById('val-right-f'),
+                massRightText: document.getElementById('mass-right-text'),
+                valRightD: document.getElementById('val-right-d'),
+
+                sliders: {
+                    leftF: document.getElementById('slider-left-f'),
+                    leftD: document.getElementById('slider-left-d'),
+                    rightF: document.getElementById('slider-right-f'),
+                    rightD: document.getElementById('slider-right-d')
+                },
+
+                stepBtns: {
+                    leftF: [document.getElementById('btn-left-f-minus'), document.getElementById('btn-left-f-plus')],
+                    leftD: [document.getElementById('btn-left-d-minus'), document.getElementById('btn-left-d-plus')],
+                    rightF: [document.getElementById('btn-right-f-minus'), document.getElementById('btn-right-f-plus')],
+                    rightD: [document.getElementById('btn-right-d-minus'), document.getElementById('btn-right-d-plus')]
+                },
+
+                weightPills: document.querySelectorAll('.w-pill')
+            };
+
+            const ctx = dom.canvas.getContext('2d');
+
+            // =========================================================================
+            // 4. UI & PHYSICS CALCULATION SYNC
+            // =========================================================================
+            function getMoments() {
+                const mLeft = Math.round(state.leftF * state.leftD * 10) / 10;
+                const mRight = Math.round(state.rightF * state.rightD * 10) / 10;
+                const net = Math.round((mRight - mLeft) * 10) / 10;
+                const isBalanced = Math.abs(net) < 0.5;
+                return { mLeft, mRight, net, isBalanced };
+            }
+
+            function spawnConfetti() {
+                const colors = ['#0284c7', '#d97706', '#10b981', '#f43f5e', '#8b5cf6'];
+                const w = dom.canvas.clientWidth || 900;
+                const h = dom.canvas.clientHeight || 410;
+                for (let i = 0; i < 36; i++) {
+                    state.confetti.push({
+                        x: w * 0.5 + (Math.random() - 0.5) * 260,
+                        y: h * 0.35 + (Math.random() - 0.5) * 60,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: -Math.random() * 5 - 2,
+                        size: Math.random() * 6 + 4,
+                        color: colors[i % colors.length],
+                        rot: Math.random() * Math.PI * 2,
+                        vRot: (Math.random() - 0.5) * 0.25,
+                        life: 1.0
+                    });
+                }
+            }
+
+            function updateUI() {
+                // Sync sliders & labels
+                dom.sliders.leftF.value = state.leftF;
+                dom.sliders.leftD.value = state.leftD;
+                dom.sliders.rightF.value = state.rightF;
+                dom.sliders.rightD.value = state.rightD;
+
+                dom.valLeftF.textContent = `${state.leftF} N`;
+                dom.massLeftText.textContent = `(${(state.leftF / 10).toFixed(0)} kg)`;
+                dom.valLeftD.textContent = `${state.leftD.toFixed(1)} m`;
+
+                dom.valRightF.textContent = `${state.rightF} N`;
+                dom.massRightText.textContent = `(${(state.rightF / 10).toFixed(0)} kg)`;
+                dom.valRightD.textContent = `${state.rightD.toFixed(1)} m`;
+
+                // Sync active weight preset pills
+                dom.weightPills.forEach(pill => {
+                    const target = pill.dataset.target;
+                    const val = Number(pill.dataset.val);
+                    pill.classList.toggle('active', state[target] === val);
+                });
+
+                // Calculate and display moments
+                const { mLeft, mRight, net, isBalanced } = getMoments();
+
+                dom.eqLeft.textContent = `${state.leftF} N × ${state.leftD.toFixed(1)} m = ${mLeft.toFixed(1)} N·m`;
+                dom.eqRight.textContent = `${state.rightF} N × ${state.rightD.toFixed(1)} m = ${mRight.toFixed(1)} N·m`;
+
+                if (isBalanced) {
+                    dom.statusCard.className = 'status-card';
+                    dom.statusTitle.textContent = 'BALANCED (Equilibrium)';
+                    dom.statusDetail.textContent = 'Net Moment = 0.0 N·m (CCW Moment = CW Moment)';
+                    if (!state.wasBalanced) {
+                        spawnConfetti();
+                    }
+                } else if (net < 0) {
+                    dom.statusCard.className = 'status-card unbalanced-left';
+                    dom.statusTitle.textContent = 'TURNING COUNTER-CLOCKWISE (Girl Heavier Moment)';
+                    dom.statusDetail.textContent = `Net Moment = ${Math.abs(net).toFixed(1)} N·m Counter-Clockwise`;
+                } else {
+                    dom.statusCard.className = 'status-card unbalanced-right';
+                    dom.statusTitle.textContent = 'TURNING CLOCKWISE (Boy Heavier Moment)';
+                    dom.statusDetail.textContent = `Net Moment = ${Math.abs(net).toFixed(1)} N·m Clockwise`;
+                }
+                state.wasBalanced = isBalanced;
+            }
+
+            // =========================================================================
+            // 5. EVENT BINDINGS (Sliders, Steppers, Presets, Modes, Challenges)
+            // =========================================================================
+            function hideFeedback() {
+                dom.challengeFeedback.className = 'challenge-feedback';
+                dom.challengeFeedback.textContent = '';
+            }
+
+            function setParam(key, value) {
+                const slider = dom.sliders[key];
+                if (slider.disabled) return;
+                const min = parseFloat(slider.min);
+                const max = parseFloat(slider.max);
+                const step = parseFloat(slider.step);
+                let clamped = Math.max(min, Math.min(max, value));
+                clamped = Math.round(clamped / step) * step;
+                clamped = Math.round(clamped * 10) / 10;
+                state[key] = clamped;
+                hideFeedback();
+                updateUI();
+            }
+
+            // Bind range sliders
+            Object.keys(dom.sliders).forEach(key => {
+                dom.sliders[key].addEventListener('input', (e) => {
+                    setParam(key, parseFloat(e.target.value));
+                });
+            });
+
+            // Bind - / + stepper buttons
+            dom.stepBtns.leftF[0].addEventListener('click', () => setParam('leftF', state.leftF - 10));
+            dom.stepBtns.leftF[1].addEventListener('click', () => setParam('leftF', state.leftF + 10));
+            dom.stepBtns.leftD[0].addEventListener('click', () => setParam('leftD', state.leftD - 0.1));
+            dom.stepBtns.leftD[1].addEventListener('click', () => setParam('leftD', state.leftD + 0.1));
+
+            dom.stepBtns.rightF[0].addEventListener('click', () => setParam('rightF', state.rightF - 10));
+            dom.stepBtns.rightF[1].addEventListener('click', () => setParam('rightF', state.rightF + 10));
+            dom.stepBtns.rightD[0].addEventListener('click', () => setParam('rightD', state.rightD - 0.1));
+            dom.stepBtns.rightD[1].addEventListener('click', () => setParam('rightD', state.rightD + 0.1));
+
+            // Bind weight preset pills
+            dom.weightPills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    if (pill.disabled) return;
+                    const target = pill.dataset.target;
+                    const val = parseFloat(pill.dataset.val);
+                    setParam(target, val);
+                });
+            });
+
+            // Toggle Vectors & Brackets
+            dom.toggleVectors.addEventListener('change', (e) => {
+                state.showVectors = e.target.checked;
+            });
+
+            // Sandbox Scenario Presets
+            function applyLocks(locks) {
+                Object.keys(locks).forEach(key => {
+                    const locked = locks[key];
+                    dom.sliders[key].disabled = locked;
+                    dom.stepBtns[key].forEach(b => b.disabled = locked);
+                });
+
+                dom.weightPills.forEach(pill => {
+                    const target = pill.dataset.target;
+                    pill.disabled = !!locks[target];
+                });
+
+                dom.lockLeft.classList.toggle('visible', locks.leftF && locks.leftD);
+                dom.lockRight.classList.toggle('visible', locks.rightF && locks.rightD);
+            }
+
+            dom.presetBalance.addEventListener('click', () => {
+                switchMode('sandbox');
+                Object.assign(state, { leftF: 300, leftD: 1.5, rightF: 450, rightD: 1.0 });
+                updateUI();
+            });
+
+            dom.presetEqual.addEventListener('click', () => {
+                switchMode('sandbox');
+                Object.assign(state, { leftF: 400, leftD: 2.0, rightF: 400, rightD: 1.2 });
+                updateUI();
+            });
+
+            dom.presetDouble.addEventListener('click', () => {
+                switchMode('sandbox');
+                Object.assign(state, { leftF: 250, leftD: 2.0, rightF: 500, rightD: 1.0 });
+                updateUI();
+            });
+
+            // Mode Switching (Sandbox vs Challenge)
+            function switchMode(newMode) {
+                state.mode = newMode;
+                hideFeedback();
+                if (newMode === 'sandbox') {
+                    dom.tabSandbox.classList.add('active');
+                    dom.tabChallenge.classList.remove('active');
+                    dom.challengePanel.classList.remove('visible');
+                    applyLocks({ leftF: false, leftD: false, rightF: false, rightD: false });
+                } else {
+                    dom.tabSandbox.classList.remove('active');
+                    dom.tabChallenge.classList.add('active');
+                    dom.challengePanel.classList.add('visible');
+                    loadChallenge(state.challengeIdx);
+                }
+            }
+
+            dom.tabSandbox.addEventListener('click', () => switchMode('sandbox'));
+            dom.tabChallenge.addEventListener('click', () => switchMode('challenge'));
+
+            // Challenge Mode Logic
+            function loadChallenge(idx) {
+                state.challengeIdx = idx % challenges.length;
+                const ch = challenges[state.challengeIdx];
+                dom.challengeLevelBadge.textContent = `Challenge ${state.challengeIdx + 1} of ${challenges.length}`;
+                dom.challengeScoreBadge.textContent = `Score: ${state.solvedSet.size} / ${challenges.length}`;
+                dom.challengeTitle.textContent = ch.title;
+                dom.challengeDesc.textContent = ch.desc;
+                hideFeedback();
+
+                Object.assign(state, ch.setup);
+                applyLocks(ch.locks);
+                updateUI();
+            }
+
+            dom.btnCheckAnswer.addEventListener('click', () => {
+                const { mLeft, mRight, isBalanced } = getMoments();
+                const ch = challenges[state.challengeIdx];
+                if (isBalanced) {
+                    state.solvedSet.add(state.challengeIdx);
+                    dom.challengeScoreBadge.textContent = `Score: ${state.solvedSet.size} / ${challenges.length}`;
+                    dom.challengeFeedback.className = 'challenge-feedback success';
+                    dom.challengeFeedback.textContent = `✓ ${ch.explain}`;
+                    spawnConfetti();
+                } else {
+                    dom.challengeFeedback.className = 'challenge-feedback error';
+                    dom.challengeFeedback.textContent = `Not balanced yet! Girl's CCW Moment = ${mLeft.toFixed(1)} N·m, Boy's CW Moment = ${mRight.toFixed(1)} N·m. Try adjusting the unlocked variable so both moments match.`;
+                }
+            });
+
+            dom.btnNextChallenge.addEventListener('click', () => {
+                loadChallenge(state.challengeIdx + 1);
+            });
+
+            // =========================================================================
+            // 6. CANVAS RESIZING & POINTER DRAG INTERACTION (WALKING ON SCALE)
+            // =========================================================================
+            let layoutMetrics = {
+                width: 900,
+                height: 410,
+                pivotX: 450,
+                pivotY: 270,
+                pxPerMeter: 135
+            };
+
+            function resizeCanvas() {
+                const rect = dom.canvasWrapper.getBoundingClientRect();
+                const w = Math.max(300, Math.floor(rect.width));
+                const h = Math.max(280, Math.floor(rect.height));
+                const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+                dom.canvas.width = w * dpr;
+                dom.canvas.height = h * dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                layoutMetrics.width = w;
+                layoutMetrics.height = h;
+                layoutMetrics.pivotX = w / 2;
+                layoutMetrics.pivotY = h * 0.66;
+                // Ensure 2.5m on each side fits comfortably inside canvas width
+                layoutMetrics.pxPerMeter = Math.min(145, (w * 0.41) / 2.5);
+            }
+
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            if (typeof ResizeObserver !== 'undefined') {
+                new ResizeObserver(resizeCanvas).observe(dom.canvasWrapper);
+            }
+
+            // Convert screen pointer coordinates into beam-local coordinates
+            function screenToBeamLocal(clientX, clientY) {
+                const rect = dom.canvas.getBoundingClientRect();
+                const sx = clientX - rect.left;
+                const sy = clientY - rect.top;
+
+                const dx = sx - layoutMetrics.pivotX;
+                const dy = sy - layoutMetrics.pivotY;
+                const cos = Math.cos(-state.currentAngle);
+                const sin = Math.sin(-state.currentAngle);
+
+                return {
+                    lx: dx * cos - dy * sin,
+                    ly: dx * sin + dy * cos
+                };
+            }
+
+            function hitTestCharacters(clientX, clientY) {
+                const { lx, ly } = screenToBeamLocal(clientX, clientY);
+                const girlX = -state.visualLeftD * layoutMetrics.pxPerMeter;
+                const boyX = state.visualRightD * layoutMetrics.pxPerMeter;
+
+                // Generous hit box covering character body & feet on plank
+                if (!dom.sliders.leftD.disabled && Math.abs(lx - girlX) < 46 && ly > -145 && ly < 35) {
+                    return 'girl';
+                }
+                if (!dom.sliders.rightD.disabled && Math.abs(lx - boyX) < 48 && ly > -150 && ly < 35) {
+                    return 'boy';
+                }
+                return null;
+            }
+
+            dom.canvas.addEventListener('pointerdown', (e) => {
+                const hit = hitTestCharacters(e.clientX, e.clientY);
+                if (hit) {
+                    state.dragging = hit;
+                    dom.canvas.classList.add('dragging');
+                    dom.canvas.setPointerCapture(e.pointerId);
+                }
+            });
+
+            dom.canvas.addEventListener('pointermove', (e) => {
+                if (state.dragging) {
+                    const { lx } = screenToBeamLocal(e.clientX, e.clientY);
+                    if (state.dragging === 'girl') {
+                        const rawMeters = -lx / layoutMetrics.pxPerMeter;
+                        setParam('leftD', rawMeters);
+                    } else if (state.dragging === 'boy') {
+                        const rawMeters = lx / layoutMetrics.pxPerMeter;
+                        setParam('rightD', rawMeters);
+                    }
+                } else {
+                    const hit = hitTestCharacters(e.clientX, e.clientY);
+                    state.hovered = hit;
+                    dom.canvas.style.cursor = hit ? 'grab' : 'default';
+                }
+            });
+
+            function stopDrag(e) {
+                if (state.dragging) {
+                    state.dragging = null;
+                    dom.canvas.classList.remove('dragging');
+                    if (e && e.pointerId !== undefined) {
+                        try { dom.canvas.releasePointerCapture(e.pointerId); } catch (_) {}
+                    }
+                }
+            }
+
+            dom.canvas.addEventListener('pointerup', stopDrag);
+            dom.canvas.addEventListener('pointercancel', stopDrag);
+
+            // =========================================================================
+            // 7. 2D CANVAS RENDERING (CHARACTERS, SEESAW, VECTORS, ANNOTATIONS)
+            // =========================================================================
+            function drawRoundedRect(x, y, w, h, r) {
+                ctx.beginPath();
+                ctx.roundRect(x, y, w, h, r);
+            }
+
+            function drawGirl(x, groundY, weight, walkPhase, mood, highlighted) {
+                ctx.save();
+                ctx.translate(x, groundY);
+
+                // Scale build subtly with weight (150N - 700N)
+                const ratio = (weight - 150) / 550;
+                const scaleX = 0.92 + ratio * 0.22;
+                const scaleY = 0.92 + ratio * 0.14;
+                ctx.scale(scaleX, scaleY);
+
+                if (highlighted) {
+                    ctx.beginPath();
+                    ctx.arc(0, -56, 52, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(2, 132, 199, 0.14)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(2, 132, 199, 0.45)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                const stride = Math.sin(walkPhase) * 8;
+
+                // Legs & Sneakers
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#fdbcb4';
+                ctx.lineWidth = 7;
+
+                // Back Leg
+                ctx.beginPath();
+                ctx.moveTo(-5, -30);
+                ctx.lineTo(-5 - stride, -6);
+                ctx.stroke();
+                ctx.fillStyle = '#0284c7';
+                drawRoundedRect(-12 - stride, -9, 14, 9, 4);
+                ctx.fill();
+
+                // Front Leg
+                ctx.beginPath();
+                ctx.moveTo(5, -30);
+                ctx.lineTo(5 + stride, -6);
+                ctx.stroke();
+                ctx.fillStyle = '#0369a1';
+                drawRoundedRect(-2 + stride, -9, 14, 9, 4);
+                ctx.fill();
+
+                // Dress / Tunic
+                ctx.fillStyle = '#0ea5e9';
+                ctx.beginPath();
+                ctx.moveTo(-13, -64);
+                ctx.lineTo(13, -64);
+                ctx.lineTo(20, -28);
+                ctx.lineTo(-20, -28);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#0284c7';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Collar accent
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(0, -63, 6, 0, Math.PI);
+                ctx.fill();
+
+                // Arms (swinging slightly when walking or cheering when balanced)
+                ctx.strokeStyle = '#fdbcb4';
+                ctx.lineWidth = 6;
+                if (mood === 'happy') {
+                    // Cheering arms raised
+                    ctx.beginPath();
+                    ctx.moveTo(-13, -58);
+                    ctx.lineTo(-25, -74);
+                    ctx.moveTo(13, -58);
+                    ctx.lineTo(25, -74);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(-13, -58);
+                    ctx.lineTo(-19 + stride * 0.6, -40);
+                    ctx.moveTo(13, -58);
+                    ctx.lineTo(19 - stride * 0.6, -40);
+                    ctx.stroke();
+                }
+
+                // Pigtails
+                ctx.fillStyle = '#451a03';
+                ctx.beginPath();
+                ctx.arc(-19, -86, 8, 0, Math.PI * 2);
+                ctx.arc(19, -86, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Hair ties
+                ctx.fillStyle = '#f43f5e';
+                ctx.beginPath();
+                ctx.arc(-15, -85, 3, 0, Math.PI * 2);
+                ctx.arc(15, -85, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Head
+                ctx.fillStyle = '#fed7aa';
+                ctx.beginPath();
+                ctx.arc(0, -82, 17, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Bangs
+                ctx.fillStyle = '#451a03';
+                ctx.beginPath();
+                ctx.arc(0, -85, 17, Math.PI, Math.PI * 2);
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(-6, -81, 2.2, 0, Math.PI * 2);
+                ctx.arc(6, -81, 2.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Rosy cheeks
+                ctx.fillStyle = 'rgba(244, 63, 94, 0.35)';
+                ctx.beginPath();
+                ctx.arc(-9, -77, 3, 0, Math.PI * 2);
+                ctx.arc(9, -77, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Expression Mouth
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                if (mood === 'happy') {
+                    ctx.arc(0, -76, 5, 0.1 * Math.PI, 0.9 * Math.PI);
+                } else if (mood === 'high') {
+                    ctx.arc(0, -74, 3.5, 0, Math.PI * 2);
+                } else {
+                    ctx.moveTo(-4, -75);
+                    ctx.lineTo(4, -75);
+                }
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawHealthyBoy(x, groundY, weight, walkPhase, mood, highlighted) {
+                ctx.save();
+                ctx.translate(x, groundY);
+
+                // Sturdy healthy build scales visibly with weight (150N - 700N)
+                const ratio = (weight - 150) / 550;
+                const scaleX = 0.96 + ratio * 0.28;
+                const scaleY = 0.94 + ratio * 0.16;
+                ctx.scale(scaleX, scaleY);
+
+                if (highlighted) {
+                    ctx.beginPath();
+                    ctx.arc(0, -60, 56, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(217, 119, 6, 0.14)';
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(217, 119, 6, 0.45)';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                const stride = Math.sin(walkPhase) * 8;
+
+                // Sturdy Shorts & Legs
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#fed7aa';
+                ctx.lineWidth = 8.5;
+
+                // Back Leg
+                ctx.beginPath();
+                ctx.moveTo(-7, -28);
+                ctx.lineTo(-7 - stride, -6);
+                ctx.stroke();
+                ctx.fillStyle = '#1e293b';
+                drawRoundedRect(-15 - stride, -9, 16, 9, 4);
+                ctx.fill();
+
+                // Front Leg
+                ctx.beginPath();
+                ctx.moveTo(7, -28);
+                ctx.lineTo(7 + stride, -6);
+                ctx.stroke();
+                ctx.fillStyle = '#334155';
+                drawRoundedRect(-1 + stride, -9, 16, 9, 4);
+                ctx.fill();
+
+                // Denim Shorts
+                ctx.fillStyle = '#1d4ed8';
+                drawRoundedRect(-18, -38, 36, 15, 5);
+                ctx.fill();
+
+                // Broad Healthy Torso (Varsity T-Shirt)
+                ctx.fillStyle = '#f59e0b';
+                drawRoundedRect(-21, -72, 42, 37, 11);
+                ctx.fill();
+                ctx.strokeStyle = '#d97706';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Varsity Chest Stripe
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(-19, -56, 38, 6);
+
+                // Arms
+                ctx.strokeStyle = '#fed7aa';
+                ctx.lineWidth = 7.5;
+                if (mood === 'happy') {
+                    ctx.beginPath();
+                    ctx.moveTo(-20, -64);
+                    ctx.lineTo(-31, -80);
+                    ctx.moveTo(20, -64);
+                    ctx.lineTo(31, -80);
+                    ctx.stroke();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(-20, -64);
+                    ctx.lineTo(-26 + stride * 0.6, -44);
+                    ctx.moveTo(20, -64);
+                    ctx.lineTo(26 - stride * 0.6, -44);
+                    ctx.stroke();
+                }
+
+                // Head
+                ctx.fillStyle = '#fed7aa';
+                ctx.beginPath();
+                ctx.arc(0, -90, 18.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Spiky/Textured Brown Hair
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.arc(0, -93, 18.5, Math.PI * 0.95, Math.PI * 2.05);
+                ctx.lineTo(14, -104);
+                ctx.lineTo(6, -100);
+                ctx.lineTo(0, -107);
+                ctx.lineTo(-7, -100);
+                ctx.lineTo(-14, -104);
+                ctx.closePath();
+                ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = '#0f172a';
+                ctx.beginPath();
+                ctx.arc(-6.5, -89, 2.3, 0, Math.PI * 2);
+                ctx.arc(6.5, -89, 2.3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Expression Mouth
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                if (mood === 'happy') {
+                    ctx.arc(0, -84, 5.5, 0.1 * Math.PI, 0.9 * Math.PI);
+                } else if (mood === 'high') {
+                    ctx.arc(0, -82, 3.8, 0, Math.PI * 2);
+                } else {
+                    ctx.moveTo(-5, -83);
+                    ctx.lineTo(5, -83);
+                }
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            function drawCharacterTag(x, y, name, weight, color) {
+                const label = `${name}: ${weight} N`;
+                ctx.font = '700 12px system-ui, -apple-system, sans-serif';
+                const textW = ctx.measureText(label).width;
+                const boxW = textW + 18;
+                const boxH = 24;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                drawRoundedRect(x - boxW / 2, y - boxH / 2, boxW, boxH, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, x, y + 0.5);
+            }
+
+            function drawWeightArrow(x, startY, weight, color, label) {
+                const len = 28 + ((weight - 150) / 550) * 58;
+                const endY = startY + len;
+
+                ctx.strokeStyle = color;
+                ctx.fillStyle = color;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+
+                // Shaft
+                ctx.beginPath();
+                ctx.moveTo(x, startY);
+                ctx.lineTo(x, endY - 8);
+                ctx.stroke();
+
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(x, endY);
+                ctx.lineTo(x - 8, endY - 12);
+                ctx.lineTo(x + 8, endY - 12);
+                ctx.closePath();
+                ctx.fill();
+
+                // Label pill
+                ctx.font = '700 11px ui-monospace, monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`${label} = ${weight}N`, x, endY + 14);
+            }
+
+            function drawDistanceBracket(x1, x2, y, distMeters, color) {
+                const left = Math.min(x1, x2);
+                const right = Math.max(x1, x2);
+                if (right - left < 12) return;
+
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.moveTo(left, y - 5);
+                ctx.lineTo(left, y + 5);
+                ctx.moveTo(left, y);
+                ctx.lineTo(right, y);
+                ctx.moveTo(right, y - 5);
+                ctx.lineTo(right, y + 5);
+                ctx.stroke();
+
+                const mid = (left + right) / 2;
+                const txt = `${distMeters.toFixed(1)} m`;
+                ctx.font = '700 11px ui-monospace, monospace';
+                const tw = ctx.measureText(txt).width + 10;
+
+                ctx.fillStyle = '#ffffff';
+                drawRoundedRect(mid - tw / 2, y - 9, tw, 18, 6);
+                ctx.fill();
+
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(txt, mid, y);
+            }
+
+            function renderFrame() {
+                const { width, height, pivotX, pivotY, pxPerMeter } = layoutMetrics;
+                ctx.clearRect(0, 0, width, height);
+
+                const { mLeft, mRight, net, isBalanced } = getMoments();
+
+                // Target beam tilt angle clamped to +/- 22 degrees
+                const maxAngle = (22 * Math.PI) / 180;
+                let targetAngle = 0;
+                if (!isBalanced) {
+                    targetAngle = Math.max(-maxAngle, Math.min(maxAngle, (net / 750) * maxAngle));
+                }
+                state.currentAngle += (targetAngle - state.currentAngle) * 0.12;
+
+                // Smooth walking leg & position interpolation
+                const dLeftDiff = state.leftD - state.visualLeftD;
+                if (Math.abs(dLeftDiff) > 0.003) {
+                    state.visualLeftD += dLeftDiff * 0.2;
+                    state.leftWalkPhase += Math.abs(dLeftDiff) * 16;
+                } else {
+                    state.visualLeftD = state.leftD;
+                    state.leftWalkPhase = 0;
+                }
+
+                const dRightDiff = state.rightD - state.visualRightD;
+                if (Math.abs(dRightDiff) > 0.003) {
+                    state.visualRightD += dRightDiff * 0.2;
+                    state.rightWalkPhase += Math.abs(dRightDiff) * 16;
+                } else {
+                    state.visualRightD = state.rightD;
+                    state.rightWalkPhase = 0;
+                }
+
+                // Smooth weight build scaling
+                state.visualLeftF += (state.leftF - state.visualLeftF) * 0.18;
+                state.visualRightF += (state.rightF - state.visualRightF) * 0.18;
+
+                // Draw Park Ground & Horizon Line
+                const groundTop = height * 0.68;
+                ctx.fillStyle = '#86efac';
+                ctx.fillRect(0, groundTop, width, 4);
+
+                // Draw Fulcrum Base & Triangle Stand
+                const standBottom = height * 0.87;
+                ctx.fillStyle = '#475569';
+                drawRoundedRect(pivotX - 54, standBottom, 108, 14, 6);
+                ctx.fill();
+
+                const gradFulcrum = ctx.createLinearGradient(pivotX, pivotY, pivotX, standBottom);
+                gradFulcrum.addColorStop(0, '#64748b');
+                gradFulcrum.addColorStop(1, '#334155');
+                ctx.fillStyle = gradFulcrum;
+                ctx.beginPath();
+                ctx.moveTo(pivotX, pivotY);
+                ctx.lineTo(pivotX - 36, standBottom);
+                ctx.lineTo(pivotX + 36, standBottom);
+                ctx.closePath();
+                ctx.fill();
+
+                // Draw Moment Rotational Arcs around Pivot (if vectors enabled)
+                if (state.showVectors) {
+                    // Left CCW Arc
+                    ctx.strokeStyle = 'rgba(2, 132, 199, 0.35)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(pivotX, pivotY, 44, Math.PI * 0.8, Math.PI * 1.25);
+                    ctx.stroke();
+
+                    // Right CW Arc
+                    ctx.strokeStyle = 'rgba(217, 119, 6, 0.35)';
+                    ctx.beginPath();
+                    ctx.arc(pivotX, pivotY, 44, -Math.PI * 0.25, Math.PI * 0.2);
+                    ctx.stroke();
+                }
+
+                // =====================================================================
+                // ROTATED SEESAW BEAM & CHARACTERS CONTEXT
+                // =====================================================================
+                ctx.save();
+                ctx.translate(pivotX, pivotY);
+                ctx.rotate(state.currentAngle);
+
+                const halfBeamPx = 2.68 * pxPerMeter;
+                const beamH = 18;
+
+                // Wooden Plank
+                const plankGrad = ctx.createLinearGradient(0, -beamH / 2, 0, beamH / 2);
+                plankGrad.addColorStop(0, '#fcd34d');
+                plankGrad.addColorStop(0.5, '#f59e0b');
+                plankGrad.addColorStop(1, '#b45309');
+                ctx.fillStyle = plankGrad;
+                drawRoundedRect(-halfBeamPx, -beamH / 2, halfBeamPx * 2, beamH, 9);
+                ctx.fill();
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Calibrated Distance Scale Ticks (0.5 m to 2.5 m on both sides)
+                ctx.font = '700 10px ui-monospace, monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                for (let m = 0.5; m <= 2.51; m += 0.5) {
+                    const offset = m * pxPerMeter;
+
+                    // Left tick
+                    ctx.strokeStyle = '#78350f';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(-offset, -beamH / 2);
+                    ctx.lineTo(-offset, -beamH / 2 + 6);
+                    ctx.stroke();
+                    ctx.fillStyle = '#451a03';
+                    ctx.fillText(`${m.toFixed(1)}m`, -offset, 2);
+
+                    // Right tick
+                    ctx.beginPath();
+                    ctx.moveTo(offset, -beamH / 2);
+                    ctx.lineTo(offset, -beamH / 2 + 6);
+                    ctx.stroke();
+                    ctx.fillText(`${m.toFixed(1)}m`, offset, 2);
+                }
+
+                // Determine Character Facial Expressions
+                let girlMood = 'neutral';
+                let boyMood = 'neutral';
+                if (isBalanced) {
+                    girlMood = 'happy';
+                    boyMood = 'happy';
+                } else if (net > 0) {
+                    // Right side goes down -> Girl is lifted high in the air
+                    girlMood = 'high';
+                } else {
+                    // Left side goes down -> Boy is lifted high in the air
+                    boyMood = 'high';
+                }
+
+                const girlX = -state.visualLeftD * pxPerMeter;
+                const boyX = state.visualRightD * pxPerMeter;
+
+                // Draw Girl & Healthy Boy standing on top of plank
+                drawGirl(
+                    girlX,
+                    -beamH / 2,
+                    state.visualLeftF,
+                    state.leftWalkPhase,
+                    girlMood,
+                    state.hovered === 'girl' || state.dragging === 'girl'
+                );
+                drawCharacterTag(girlX, -beamH / 2 - 122, 'Girl', state.leftF, '#0284c7');
+
+                drawHealthyBoy(
+                    boyX,
+                    -beamH / 2,
+                    state.visualRightF,
+                    state.rightWalkPhase,
+                    boyMood,
+                    state.hovered === 'boy' || state.dragging === 'boy'
+                );
+                drawCharacterTag(boyX, -beamH / 2 - 130, 'Healthy Boy', state.rightF, '#d97706');
+
+                // Draw Vectors & Distance Brackets attached to beam
+                if (state.showVectors) {
+                    drawWeightArrow(girlX, beamH / 2 + 8, state.leftF, '#0284c7', 'W₁');
+                    drawWeightArrow(boyX, beamH / 2 + 8, state.rightF, '#d97706', 'W₂');
+
+                    drawDistanceBracket(0, girlX, -beamH / 2 - 16, state.leftD, '#0284c7');
+                    drawDistanceBracket(0, boyX, -beamH / 2 - 16, state.rightD, '#d97706');
+                }
+
+                ctx.restore();
+
+                // Center Pivot Bolt (on top of plank)
+                ctx.fillStyle = isBalanced ? '#10b981' : '#f8fafc';
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(pivotX, pivotY, 9, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Equilibrium Confetti Particles
+                for (let i = state.confetti.length - 1; i >= 0; i--) {
+                    const p = state.confetti[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.18;
+                    p.rot += p.vRot;
+                    p.life -= 0.016;
+
+                    if (p.life <= 0) {
+                        state.confetti.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rot);
+                    ctx.globalAlpha = Math.max(0, p.life);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+                    ctx.restore();
+                }
+
+                requestAnimationFrame(renderFrame);
+            }
+
+            // Initialize UI and Start 60fps Loop
+            updateUI();
+            requestAnimationFrame(renderFrame);
+        });
+    </script>
+</body>
+</html>
